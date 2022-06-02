@@ -33,32 +33,28 @@ def _get_num_neighbours(num: int):
     yield num + 1
 
 
+def _get_phases_of_version(version: str) -> Iterator[Release]:
+    yield Release(version=str(version), phase=ReleasePhase.FINAL)
+    for n in range(1, 3):
+        yield Release(version=f'{version}dev{n}', phase=ReleasePhase.DEV)
+        for pre in ('a', 'b', 'rc'):
+            yield Release(version=f'{version}{pre}{n}', phase=ReleasePhase.PRE)
+        yield Release(version=f'{version}post{n}', phase=ReleasePhase.POST)
+
+
 def _create_checks_for_version(majors: List[int], minors: List[int], micros: List[int]) -> Iterator[Release]:
-    pres = ('a', 'b', 'r', 'rc')
     for major in majors:
         if major > 0:
-            yield Release(version=str(major), phase=ReleasePhase.FINAL)
-            for n in range(1, 3):
-                yield Release(version=f'{major}dev{n}', phase=ReleasePhase.DEV)
-                for pre in pres:
-                    yield Release(version=f'{major}{pre}{n}', phase=ReleasePhase.PRE)
-                yield Release(version=f'{major}post{n}', phase=ReleasePhase.POST)
+            for version in _get_phases_of_version(str(major)):
+                yield version
         for minor in minors:
             if sum([major, minor]) > 0:
-                yield Release(version=f'{major}.{minor}', phase=ReleasePhase.FINAL)
-                for n in range(1, 3):
-                    yield Release(version=f'{major}.{minor}dev{n}', phase=ReleasePhase.DEV)
-                    for pre in pres:
-                        yield Release(version=f'{major}.{minor}{pre}{n}', phase=ReleasePhase.PRE)
-                    yield Release(version=f'{major}.{minor}post{n}', phase=ReleasePhase.POST)
+                for version in _get_phases_of_version(f'{major}.{minor}'):
+                    yield version
             for micro in micros:
                 if sum([major, minor, micro]) > 0:
-                    yield Release(version=f'{major}.{minor}.{micro}', phase=ReleasePhase.FINAL)
-                    for n in range(1, 3):
-                        yield Release(version=f'{major}.{minor}.{micro}dev{n}', phase=ReleasePhase.DEV)
-                        for pre in pres:
-                            yield Release(version=f'{major}.{minor}.{micro}{pre}{n}', phase=ReleasePhase.PRE)
-                        yield Release(version=f'{major}.{minor}.{micro}post{n}', phase=ReleasePhase.POST)
+                    for version in _get_phases_of_version(f'{major}.{minor}.{micro}'):
+                        yield version
 
 
 def _create_checks_for_specifier(specifier_set: str) -> List[Release]:
@@ -95,7 +91,7 @@ def check(specifier: str) -> Dict[str, Dict[str, bool]]:
 
 
 def main():
-    output = check('==0.2.*')
+    output = check('<=0.2b1')
     for group, releases in output.items():
         print(f'{group}')
         for release, valid in filter(lambda x: x[1], releases.items()):
