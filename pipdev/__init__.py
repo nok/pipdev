@@ -6,6 +6,9 @@ from packaging.specifiers import SpecifierSet
 from packaging.version import Version
 
 from tabulate import tabulate
+from colorama import init, Fore
+
+init()
 
 
 @dataclasses.dataclass
@@ -88,9 +91,6 @@ def _check_generated_versions_for_specifier_set(specifier_set: str) -> Iterator[
 
 
 def print_similar_versions(specifier_set: str) -> str:
-    from colorama import init, Fore
-    init()
-
     checks = _check_generated_versions_for_specifier_set(specifier_set)
     base_versions = {}
     index = set()
