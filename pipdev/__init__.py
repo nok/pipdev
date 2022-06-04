@@ -93,7 +93,13 @@ def print_similar_versions(specifier_set: str) -> str:
 
     checks = _check_generated_versions_for_specifier_set(specifier_set)
     base_versions = {}
+    index = set()
     for check in checks:
+        if check.version.public in index:
+            continue
+        else:
+            index.add(check.version.public)
+
         base_version = check.version.base_version
         if base_version not in base_versions.keys():
             base_versions[base_version] = dict(dev=[], pre=[], final=[], post=[])
@@ -130,7 +136,7 @@ def check(version: str, specifier_set: str):
 
 
 def main():
-    print_similar_versions('~=0.2b1')
+    print_similar_versions('~=0.2b1,>0.3')
 
 
 if __name__ == '__main__':
