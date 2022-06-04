@@ -1,29 +1,18 @@
 import dataclasses
-import enum
 import re
-from typing import List, Iterator, Dict, Optional
+from typing import List, Iterator, Optional
 
 from packaging.specifiers import SpecifierSet
 from packaging.version import Version
 
-
-class ReleasePhase(enum.Enum):
-    PRE = 'pre'
-    DEV = 'dev'
-    FINAL = 'final'
-    POST = 'post'
-
-    def __str__(self):
-        return str(self.value).lower()
+from tabulate import tabulate
 
 
 @dataclasses.dataclass
-class Release:
-    version: str
-    phase: ReleasePhase
-
-
-r = Release(version='1', phase=ReleasePhase.DEV)
+class VersionCheck:
+    version: Version
+    specifier_set: SpecifierSet
+    is_valid: bool
 
 
 def _get_num_neighbours(num: int):
@@ -33,16 +22,16 @@ def _get_num_neighbours(num: int):
     yield num + 1
 
 
-def _get_phases_of_version(version: str, suffix_nums: List[int]) -> Iterator[Release]:
-    yield Release(version=str(version), phase=ReleasePhase.FINAL)
+def _get_phases_of_version(version: str, suffix_nums: List[int]) -> Iterator[Version]:
+    yield Version(f'{version}')
     for n in suffix_nums:
-        yield Release(version=f'{version}dev{n}', phase=ReleasePhase.DEV)
+        yield Version(f'{version}dev{n}')
         for pre in ('a', 'b', 'rc'):
-            yield Release(version=f'{version}{pre}{n}', phase=ReleasePhase.PRE)
-        yield Release(version=f'{version}post{n}', phase=ReleasePhase.POST)
+            yield Version(f'{version}{pre}{n}')
+        yield Version(f'{version}post{n}')
 
 
-def _create_checks_for_version(majors: List[int], minors: List[int], micros: List[int], suffix_num: Optional[int] = None) -> Iterator[Release]:
+def _generate_versions_for_version(majors: List[int], minors: List[int], micros: List[int], suffix_num: Optional[int] = None) -> Iterator[Version]:
     if suffix_num:
         suffix_nums = [suffix_num - 1, suffix_num, suffix_num + 1]
         suffix_nums = list(filter(lambda x: x > 0, suffix_nums))
@@ -51,21 +40,21 @@ def _create_checks_for_version(majors: List[int], minors: List[int], micros: Lis
 
     for major in majors:
         if major > 0:
-            for version in _get_phases_of_version(str(major), suffix_nums):
+            for version in _get_phases_of_version(str(major), suffix_nums=suffix_nums):
                 yield version
         for minor in minors:
             if sum([major, minor]) > 0:
-                for version in _get_phases_of_version(f'{major}.{minor}', suffix_nums):
+                for version in _get_phases_of_version(f'{major}.{minor}', suffix_nums=suffix_nums):
                     yield version
             for micro in micros:
                 if sum([major, minor, micro]) > 0:
-                    for version in _get_phases_of_version(f'{major}.{minor}.{micro}', suffix_nums):
+                    for version in _get_phases_of_version(f'{major}.{minor}.{micro}', suffix_nums=suffix_nums):
                         yield version
 
 
-def _create_checks_for_specifier(specifier_set: str) -> List[Release]:
-    releases = []
-    pattern = r'^([~>=<!]{2,3})(\d+(=?\.(\d+(=?\.(\d+)*)*)*)*)(([a-zA-Z]+)(\d+))?'
+def _generate_versions_for_specifier_set(specifier_set: str) -> List[Version]:
+    generated_versions = []
+    pattern = r'^([~>=<!]{1,3})(\d+(=?\.(\d+(=?\.(\d+)*)*)*)*)(([a-zA-Z]+)(\d+))?'
     for specifier in specifier_set.split(','):
         match = re.search(pattern, specifier)
         if match:
@@ -85,29 +74,63 @@ def _create_checks_for_specifier(specifier_set: str) -> List[Release]:
             minors = list(_get_num_neighbours(minor))
             micros = list(_get_num_neighbours(micro))
 
-            releases += list(_create_checks_for_version(majors, minors, micros, suffix_num))
+            generated_versions += list(_generate_versions_for_version(majors, minors, micros, suffix_num))
 
-    return releases
+    return generated_versions
 
 
-def check(specifier: str) -> Dict[str, Dict[str, bool]]:
-    checks = _create_checks_for_specifier(specifier)
-    specifier = SpecifierSet(specifier)
-    groups = {
-        str(ReleasePhase.DEV): {r.version: r.version in specifier for r in filter(lambda r: r.phase == ReleasePhase.DEV, checks)},
-        str(ReleasePhase.PRE): {r.version: r.version in specifier for r in filter(lambda r: r.phase == ReleasePhase.PRE, checks)},
-        str(ReleasePhase.FINAL): {r.version: r.version in specifier for r in filter(lambda r: r.phase == ReleasePhase.FINAL, checks)},
-        str(ReleasePhase.POST): {r.version: r.version in specifier for r in filter(lambda r: r.phase == ReleasePhase.POST, checks)},
-    }
-    return groups
+def _check_generated_versions_for_specifier_set(specifier_set: str) -> Iterator[VersionCheck]:
+    versions = _generate_versions_for_specifier_set(specifier_set)
+    specifier_set = SpecifierSet(specifiers=specifier_set)
+    for version in versions:
+        is_valid = version.public in specifier_set
+        yield VersionCheck(version=version, specifier_set=specifier_set, is_valid=is_valid)
+
+
+def print_similar_versions(specifier_set: str) -> str:
+    from colorama import init, Fore
+    init()
+
+    checks = _check_generated_versions_for_specifier_set(specifier_set)
+    base_versions = {}
+    for check in checks:
+        base_version = check.version.base_version
+        if base_version not in base_versions.keys():
+            base_versions[base_version] = dict(dev=[], pre=[], final=[], post=[])
+        if check.version.is_devrelease:
+            base_versions[base_version]['dev'].append(check)
+        elif check.version.is_prerelease:
+            base_versions[base_version]['pre'].append(check)
+        elif check.version.is_postrelease:
+            base_versions[base_version]['post'].append(check)
+        else:
+            base_versions[base_version]['final'].append(check)
+
+    base_versions = dict(sorted(base_versions.items()))
+
+    color_it = lambda check: f'{Fore.GREEN if check.is_valid else Fore.RED}{check.version.public}{Fore.RESET}'
+
+    rows = []
+    for phase in base_versions.values():
+        rows.append([
+            ' - '.join(sorted([color_it(check) for check in phase['dev']])),
+            ' - '.join(sorted([color_it(check) for check in phase['pre']])),
+            ' - '.join(sorted([color_it(check) for check in phase['final']])),
+            ' - '.join(sorted([color_it(check) for check in phase['post']]))
+        ])
+
+    output = tabulate(rows, headers=('dev', 'pre', 'final', 'post'), tablefmt='github')
+    print(output)
+    return output
+
+
+def check(version: str, specifier_set: str):
+    specifier_set = SpecifierSet(specifier_set)
+    return version in specifier_set
 
 
 def main():
-    output = check('>=0.2a2')
-    for group, releases in output.items():
-        print(f'{group}')
-        for release, valid in filter(lambda x: x[1], releases.items()):
-            print(f'{release} : {valid}')
+    print_similar_versions('~=0.2b1')
 
 
 if __name__ == '__main__':
