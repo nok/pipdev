@@ -25,23 +25,31 @@
             font-family: monospace, monospace;
         }
         .output {
-            padding-top: 1em;
+            padding-top: 2em;
         }
-        .output th, .output td {
-            width: 25%;
+        .output table {
+            width: auto;
+            margin: 0 auto;
         }
         .output thead th {
             text-transform: uppercase;
             font-size: smaller;
         }
         .output tbody span {
-            opacity: 0.6;
+            opacity: 0.5;
             font-family: monospace, monospace;
             font-size: smaller;
         }
-        .output tbody span.is-valid {
+        .output tbody td.is-valid {
+            background-color: rgba(0, 128, 0, 0.4);
+            border-bottom-color: rgba(0, 128, 0, 0.4);
+        }
+        .output tbody td.is-final span {
+            opacity: 0.75;
+        }
+        .output tbody td.is-valid span,
+        .output tbody td.is-valid.is-final span {
             opacity: 1;
-            color: green;
         }
         .output tbody tr:last-child td {
             border-bottom: 0;
@@ -49,12 +57,16 @@
     </style>
 </head>
 <body>
-<main class="container">
-    <div class="row source">
-        <input type="text" id="js-source" placeholder="Example: ~=2.0" aria-invalid="">
+<main>
+    <div class="container">
+        <div class="row source">
+            <input type="text" id="js-source" placeholder="~=1.2b,<=1.3a,!=1.2.0" aria-invalid="">
+        </div>
     </div>
-    <div class="row output">
-        <div id="js-output"></div>
+    <div class="container-fluid">
+        <div class="row output">
+            <div id="js-output"></div>
+        </div>
     </div>
 </main>
 <py-script>
@@ -65,9 +77,9 @@
     output_el = document.getElementById('js-output')
     source_el = document.getElementById('js-source')
 
-    def update(e):
+    def update(value):
         try:
-            table_content = generate_versions_table(e.target.value, fmt='html')
+            table_content = generate_versions_table(value, fmt='html')
         except:
             source_el.setAttribute('aria-invalid', 'true')
             output_el.innerHTML = ''
@@ -83,11 +95,22 @@
                 output_el.innerHTML = ''
                 output_el.appendChild(table_el)
 
-    source_el.addEventListener('input', pyodide.create_proxy(update))
-    source_el.addEventListener('propertychange', pyodide.create_proxy(update))
+    def on_update(e):
+        update(e.target.value)
+
+    source_el.addEventListener('input', pyodide.create_proxy(on_update))
+    source_el.addEventListener('propertychange', pyodide.create_proxy(on_update))
+
+    def set_spec(value):
+        source_el.value = value
+        update(value)
+
+    set_spec('~=1.2b,<=1.3a,!=1.2.0')
 
     body_el = document.getElementsByTagName('html')[0]
     body_el.className += ' is-loaded'
+
+    source_el.focus()
 </py-script>
 </body>
 </html>

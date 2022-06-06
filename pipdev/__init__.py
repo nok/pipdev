@@ -15,11 +15,14 @@ class VersionCheck:
     specifier_set: SpecifierSet
     is_valid: bool
 
-    def print(self, fmt: str) -> str:
+    def print(self, fmt: str, **kwargs) -> str:
         if fmt == 'html':
-            if self.is_valid:
-                return f'<span class="is-valid">{self.version.public}</span>'
-            return f'<span>{self.version.public}</span>'
+            is_phase = 'is-' + kwargs.get('phase')
+            is_valid = 'is-valid' if self.is_valid else ''
+            colspan = kwargs.get('colspan', 1)
+            return f'<td colspan="{colspan}" class="{is_phase} {is_valid}">' \
+                   f'<span>{self.version.public}</span>' \
+                   f'</td>'
         return f'{Fore.GREEN if self.is_valid else Fore.RED}' \
                f'{self.version.public}' \
                f'{Fore.RESET}'
@@ -49,7 +52,7 @@ def _generate_versions_for_version(
         suffix_num: Optional[int] = None) -> Iterator[Version]:
     if suffix_num:
         suffix_nums = [suffix_num - 1, suffix_num, suffix_num + 1]
-        suffix_nums = list(filter(lambda x: x > 0, suffix_nums))
+        suffix_nums = list(filter(lambda x: x >= 0, suffix_nums))
     else:
         suffix_nums = [1]
 
@@ -70,32 +73,33 @@ def _generate_versions_for_version(
 
 
 def _generate_versions_for_specifier_set(specifier_set: str) -> List[Version]:
-    generated_versions = []
+    generated_vers = []
     pattern = r'^([~>=<!]{1,3})(\d+(=?\.(\d+(=?\.(\d+)*)*)*)*)(([a-zA-Z]+)(\d+))?'
     for specifier in specifier_set.split(','):
         match = re.search(pattern, specifier)
         if match:
-            version_str = match.group(2).strip('.')
-            versions = Version(version_str).base_version.split('.')
+            ver_str = match.group(2).strip('.')
+            vers = Version(ver_str).base_version.split('.')
             # suffix_word = match.group(8)
             suffix_num = match.group(9)
             if suffix_num:
                 suffix_num = int(suffix_num)
 
-            versions = list(filter(lambda x: str.isnumeric(x), versions))
-            versions = list(map(int, versions))
-            versions += (3 - len(versions)) * [0]
-            major, minor, micro = versions
+            vers = list(filter(lambda x: str.isnumeric(x), vers))
+            vers = list(map(int, vers))
+            vers += (3 - len(vers)) * [0]
+            major, minor, micro = vers
 
             majors = list(_get_num_neighbours(major))
             minors = list(_get_num_neighbours(minor))
             micros = list(_get_num_neighbours(micro))
 
-            generated_versions += list(
-                _generate_versions_for_version(majors, minors, micros,
-                                               suffix_num))
+            vers = _generate_versions_for_version(majors, minors, micros,
+                                                  suffix_num)
+            vers = filter(lambda v: not v.base_version.endswith('0'), vers)
+            generated_vers += list(vers)
 
-    return generated_versions
+    return generated_vers
 
 
 def _check_generated_versions_for_specifier_set(
@@ -138,28 +142,66 @@ def generate_versions_table(specifier_set: str, fmt: str = 'github') -> str:
 
     base_versions = dict(sorted(base_versions.items()))
 
-    rows = []
+    # Sort entries:
     for base_version in base_versions.values():
-        # Sort versions:
         for phase, versions in base_version.items():
             base_version[phase] = sorted(versions,
                                          key=lambda x: x.version.public)
-        # Colorize versions:
-        rows.append([
-            ' - '.join([
-                version_check.print(fmt=fmt) for version_check in base_version
-            ]) for base_version in base_version.values()
-        ])
 
-    if len(rows) == 0:
+    entries = []
+    if fmt != 'html':
+        for base_version in base_versions.values():
+            entries.append([
+                ' - '.join([
+                    version_check.print(fmt=fmt)
+                    for version_check in base_version
+                ]) for base_version in base_version.values()
+            ])
+
+        if len(entries) == 0:
+            return ''
+
+        return tabulate(entries,
+                        headers=('dev', 'pre', 'final', 'post'),
+                        tablefmt=fmt)
+
+    # Count max lengths:
+    max_lengths = dict(dev=0, pre=0, final=0, post=0)
+    for base_version in base_versions.values():
+        for phase in max_lengths.keys():
+            max_lengths[phase] = max(max_lengths[phase],
+                                     len(base_version[phase]))
+
+    for base_version in base_versions.values():
+        entry = []
+        for phase in max_lengths.keys():
+            cells = []
+            for version_check in base_version[phase]:
+                colspan = int(max_lengths[phase] / len(base_version[phase]))
+                cells.append(
+                    version_check.print(fmt=fmt, colspan=colspan, phase=phase))
+            entry.append(''.join(cells))
+        entries.append(entry)
+
+    if len(entries) == 0:
         return ''
 
-    tablefmt = 'unsafehtml' if fmt == 'html' else fmt
-    output = tabulate(rows,
-                      headers=('dev', 'pre', 'final', 'post'),
-                      tablefmt=tablefmt)
-
-    return output
+    tbody = [
+        f'<tr>\n{tr}\n</tr>\n' for tr in ['\n'.join(td) for td in entries]
+    ]
+    return f'''
+        <table>
+            <thead>
+                <tr>
+                    <th colspan="{max_lengths['dev']}">dev</th>
+                    <th colspan="{max_lengths['pre']}">pre</th>
+                    <th colspan="{max_lengths['final']}">final</th>
+                    <th colspan="{max_lengths['post']}">post</th>
+                </tr>
+            </thead>
+            <tbody>{''.join(tbody)}</tbody>
+        </table>
+    '''
 
 
 def check(version: str, specifier_set: str):
@@ -168,7 +210,7 @@ def check(version: str, specifier_set: str):
 
 
 def main():
-    table = generate_versions_table('~=0.2,!=0.3.*')
+    table = generate_versions_table('~=1.2b,<=1.3a,!=1.2.0', fmt='html')
     print(table)
 
 
