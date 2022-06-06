@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://pyscript.net/alpha/pyscript.css" />
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+    <script defer src="https://pyscript.net/alpha/pyscript.js"></script>
+    <title>pipdev</title>
+    <py-env>
+        - packaging
+        - tabulate
+        - colorama
+        - ./dist/pipdev-0.1.0-py3-none-any.whl
+    </py-env>
+    <style>
+        main {
+            display: none;
+        }
+        html.is-loaded main {
+            display: block;
+        }
+        .source input {
+            text-align: center;
+            font-family: monospace, monospace;
+        }
+        .output {
+            padding-top: 1em;
+        }
+        .output th, .output td {
+            width: 25%;
+        }
+        .output thead th {
+            text-transform: uppercase;
+            font-size: smaller;
+        }
+        .output tbody span {
+            opacity: 0.6;
+            font-family: monospace, monospace;
+            font-size: smaller;
+        }
+        .output tbody span.is-valid {
+            opacity: 1;
+            color: green;
+        }
+        .output tbody tr:last-child td {
+            border-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+<main class="container">
+    <div class="row source">
+        <input type="text" id="js-source" placeholder="Example: ~=2.0" aria-invalid="">
+    </div>
+    <div class="row output">
+        <div id="js-output"></div>
+    </div>
+</main>
+<py-script>
+    import pyodide
+    from js import window, document
+    from pipdev import check, generate_versions_table
+
+    output_el = document.getElementById('js-output')
+    source_el = document.getElementById('js-source')
+
+    def update(e):
+        try:
+            table_content = generate_versions_table(e.target.value, fmt='html')
+        except:
+            source_el.setAttribute('aria-invalid', 'true')
+            output_el.innerHTML = ''
+        else:
+            if table_content.strip() == "":
+                source_el.setAttribute('aria-invalid', 'true')
+                output_el.innerHTML = ''
+            else:
+                source_el.setAttribute('aria-invalid', 'false')
+                table_el = document.createElement('table')
+                table_el.innerHTML = table_content
+                table_el.classList.add('ms-table')
+                output_el.innerHTML = ''
+                output_el.appendChild(table_el)
+
+    source_el.addEventListener('input', pyodide.create_proxy(update))
+    source_el.addEventListener('propertychange', pyodide.create_proxy(update))
+
+    body_el = document.getElementsByTagName('html')[0]
+    body_el.className += ' is-loaded'
+</py-script>
+</body>
+</html>

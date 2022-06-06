@@ -17,9 +17,9 @@ class VersionCheck:
 
     def print(self, fmt: str) -> str:
         if fmt == 'html':
-            return f'<span style="color: {"green" if self.is_valid else "red"}">' \
-                   f'{self.version.public}' \
-                   f'</span>'
+            if self.is_valid:
+                return f'<span class="is-valid">{self.version.public}</span>'
+            return f'<span>{self.version.public}</span>'
         return f'{Fore.GREEN if self.is_valid else Fore.RED}' \
                f'{self.version.public}' \
                f'{Fore.RESET}'
@@ -109,7 +109,7 @@ def _check_generated_versions_for_specifier_set(
                            is_valid=is_valid)
 
 
-def print_similar_versions(specifier_set: str, fmt: str = 'github') -> str:
+def generate_versions_table(specifier_set: str, fmt: str = 'github') -> str:
     init()
 
     version_checks = _check_generated_versions_for_specifier_set(specifier_set)
@@ -151,11 +151,14 @@ def print_similar_versions(specifier_set: str, fmt: str = 'github') -> str:
             ]) for base_version in base_version.values()
         ])
 
+    if len(rows) == 0:
+        return ''
+
     tablefmt = 'unsafehtml' if fmt == 'html' else fmt
     output = tabulate(rows,
                       headers=('dev', 'pre', 'final', 'post'),
                       tablefmt=tablefmt)
-    print(output)
+
     return output
 
 
@@ -165,7 +168,8 @@ def check(version: str, specifier_set: str):
 
 
 def main():
-    print_similar_versions('>=0.1b2,<=0.2')
+    table = generate_versions_table('~=0.2,!=0.3.*')
+    print(table)
 
 
 if __name__ == '__main__':
