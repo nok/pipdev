@@ -29,6 +29,9 @@
         .examples, .checkbox {
             font-size: smaller;
         }
+        .examples a {
+            font-size: smaller;
+        }
         .checkbox input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"])
         {
             font-size: smaller;
@@ -77,9 +80,9 @@
             <nav>
                 <ul class="examples">
                     <li>Examples:</li>
-                    <li><a role="button" class="outline secondary" style="font-size: smaller">~=1.2</a></li>
-                    <li><a role="button" class="outline secondary" style="font-size: smaller">>=1.2,==1.*</a></li>
-                    <li><a role="button" class="outline secondary" style="font-size: smaller">~=1.2b,<=1.3a,!=1.2.0</a></li>
+                    <li><a href="#" role="button" class="outline secondary" id="js-example-0">~=1.2</a></li>
+                    <li><a href="#" role="button" class="outline secondary" id="js-example-1">==1.2.*</a></li>
+                    <li><a href="#" role="button" class="outline secondary" id="js-example-2">~=1.2b,<=1.3a,!=1.2</a></li>
                 </ul>
                 <ul class="checkbox">
                     <li>
@@ -99,8 +102,8 @@
     </div>
 </main>
 <py-script>
-    import pyodide
     from js import window, document
+    from pyodide import create_proxy
     from pipdev import check, generate_versions_table
 
     output_el = document.getElementById('js-output')
@@ -127,8 +130,8 @@
     def on_update(e):
         update(e.target.value)
 
-    source_el.addEventListener('input', pyodide.create_proxy(on_update))
-    source_el.addEventListener('propertychange', pyodide.create_proxy(on_update))
+    source_el.addEventListener('input', create_proxy(on_update))
+    source_el.addEventListener('propertychange', create_proxy(on_update))
 
     def set_spec(value):
         source_el.value = value
@@ -138,6 +141,14 @@
 
     body_el = document.getElementsByTagName('html')[0]
     body_el.className += ' is-loaded'
+
+    # Ugly but the for loop over getElementByClassName doesn't work.
+    ex0_el = document.getElementById('js-example-0')
+    ex0_el.addEventListener('click', create_proxy(lambda e: set_spec(ex0_el.textContent)))
+    ex1_el = document.getElementById('js-example-1')
+    ex1_el.addEventListener('click', create_proxy(lambda e: set_spec(ex1_el.textContent)))
+    ex2_el = document.getElementById('js-example-2')
+    ex2_el.addEventListener('click', create_proxy(lambda e: set_spec(ex2_el.textContent)))
 
     source_el.focus()
 </py-script>
