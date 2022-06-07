@@ -20,9 +20,20 @@
         html.is-loaded main {
             display: block;
         }
-        .source input {
+        .source input,
+        .examples a,
+        .checkbox input {
             text-align: center;
             font-family: monospace, monospace;
+        }
+        .examples, .checkbox {
+            font-size: smaller;
+        }
+        .checkbox input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"])
+        {
+            font-size: smaller;
+            height: auto;
+            padding: var(--nav-link-spacing-vertical) var(--nav-link-spacing-horizontal);
         }
         .output {
             padding-top: 2em;
@@ -60,7 +71,25 @@
 <main>
     <div class="container">
         <div class="row source">
-            <input type="text" id="js-source" placeholder="~=1.2b,<=1.3a,!=1.2.0" aria-invalid="">
+            <input type="text" id="js-source" placeholder="~=1.2" aria-invalid="">
+        </div>
+        <div class="row">
+            <nav>
+                <ul class="examples">
+                    <li>Examples:</li>
+                    <li><a role="button" class="outline secondary" style="font-size: smaller">~=1.2</a></li>
+                    <li><a role="button" class="outline secondary" style="font-size: smaller">>=1.2,==1.*</a></li>
+                    <li><a role="button" class="outline secondary" style="font-size: smaller">~=1.2b,<=1.3a,!=1.2.0</a></li>
+                </ul>
+                <ul class="checkbox">
+                    <li>
+                        <label for="js-check">Checkbox:</label>
+                    </li>
+                    <li>
+                        <input type="text" id="js-check" placeholder="1.3" aria-invalid="">
+                    </li>
+                </ul>
+            </nav>
         </div>
     </div>
     <div class="container-fluid">
@@ -105,7 +134,7 @@
         source_el.value = value
         update(value)
 
-    set_spec('~=1.2b,<=1.3a,!=1.2.0')
+    set_spec('~=1.2')
 
     body_el = document.getElementsByTagName('html')[0]
     body_el.className += ' is-loaded'
