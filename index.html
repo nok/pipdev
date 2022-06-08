@@ -102,7 +102,7 @@
     </div>
 </main>
 <py-script>
-    from js import window, document
+    from js import window, document, window
     from pyodide import create_proxy
     from pipdev import check, generate_versions_table
 
@@ -114,6 +114,18 @@
     ex0_el = document.getElementById('js-example-0')
     ex1_el = document.getElementById('js-example-1')
     ex2_el = document.getElementById('js-example-2')
+
+    def get_url_param(name):
+        params = str(window.location.search).strip('?').replace('%3E', '>').replace('%3C', '<')
+        if params == '':
+            return False
+        params = params.split('&')
+        for param in params:
+            if param.startswith(name + '='):
+                param = param.lstrip(name + '=')
+                if param != '':
+                    return param
+        return False
 
     def do_check():
         if check_el.value == '' or source_el.value == '':
@@ -158,15 +170,24 @@
     check_el.addEventListener('input', create_proxy(manage_check))
     check_el.addEventListener('propertychange', create_proxy(manage_check))
 
-    def set_spec(value):
-        source_el.value = value
-        do_update(value)
-
     ex0_el.addEventListener('click', create_proxy(lambda e: set_spec(ex0_el.textContent)))
     ex1_el.addEventListener('click', create_proxy(lambda e: set_spec(ex1_el.textContent)))
     ex2_el.addEventListener('click', create_proxy(lambda e: set_spec(ex2_el.textContent)))
 
-    set_spec('~=1.2')
+    def set_spec(value):
+        source_el.value = value
+        do_update(value)
+
+    def set_vers(value):
+        check_el.value = value
+
+    spec = get_url_param('spec')
+    spec = spec if spec else '~=1.2'
+    set_spec(spec)
+
+    vers = get_url_param('vers')
+    vers = vers if vers else '1.2'
+    set_vers(vers)
 
     source_el.focus()
     body_el = document.getElementsByTagName('html')[0]
