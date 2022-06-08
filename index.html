@@ -74,7 +74,7 @@
 <main>
     <div class="container">
         <div class="row source">
-            <input type="text" id="js-source" placeholder="~=1.2" aria-invalid="">
+            <input type="text" id="js-source" placeholder="~=1.2" value="~=1.2" aria-invalid="">
         </div>
         <div class="row">
             <nav>
@@ -86,10 +86,10 @@
                 </ul>
                 <ul class="checkbox">
                     <li>
-                        <label for="js-check">Checkbox:</label>
+                        <label for="js-check">Individual test:</label>
                     </li>
                     <li>
-                        <input type="text" id="js-check" placeholder="1.3" aria-invalid="">
+                        <input type="text" id="js-check" placeholder="1.2" value="1.2" aria-invalid="">
                     </li>
                 </ul>
             </nav>
@@ -106,10 +106,28 @@
     from pyodide import create_proxy
     from pipdev import check, generate_versions_table
 
+    # Elements:
     output_el = document.getElementById('js-output')
     source_el = document.getElementById('js-source')
+    check_el = document.getElementById('js-check')
 
-    def update(value):
+    ex0_el = document.getElementById('js-example-0')
+    ex1_el = document.getElementById('js-example-1')
+    ex2_el = document.getElementById('js-example-2')
+
+    def do_check():
+        if check_el.value == '' or source_el.value == '':
+            check_el.setAttribute('aria-invalid', '')
+            return
+
+        try:
+            is_valid = check(check_el.value, source_el.value)
+        except:
+            check_el.setAttribute('aria-invalid', '')
+        else:
+            check_el.setAttribute('aria-invalid', 'false' if is_valid else 'true')
+
+    def do_update(value):
         try:
             table_content = generate_versions_table(value, fmt='html')
         except:
@@ -126,31 +144,33 @@
                 table_el.classList.add('ms-table')
                 output_el.innerHTML = ''
                 output_el.appendChild(table_el)
+        do_check()
 
-    def on_update(e):
-        update(e.target.value)
+    def manage_update(e):
+        do_update(e.target.value)
 
-    source_el.addEventListener('input', create_proxy(on_update))
-    source_el.addEventListener('propertychange', create_proxy(on_update))
+    source_el.addEventListener('input', create_proxy(manage_update))
+    source_el.addEventListener('propertychange', create_proxy(manage_update))
+
+    def manage_check(e):
+        do_check()
+
+    check_el.addEventListener('input', create_proxy(manage_check))
+    check_el.addEventListener('propertychange', create_proxy(manage_check))
 
     def set_spec(value):
         source_el.value = value
-        update(value)
+        do_update(value)
+
+    ex0_el.addEventListener('click', create_proxy(lambda e: set_spec(ex0_el.textContent)))
+    ex1_el.addEventListener('click', create_proxy(lambda e: set_spec(ex1_el.textContent)))
+    ex2_el.addEventListener('click', create_proxy(lambda e: set_spec(ex2_el.textContent)))
 
     set_spec('~=1.2')
 
+    source_el.focus()
     body_el = document.getElementsByTagName('html')[0]
     body_el.className += ' is-loaded'
-
-    # Ugly but the for loop over getElementByClassName doesn't work.
-    ex0_el = document.getElementById('js-example-0')
-    ex0_el.addEventListener('click', create_proxy(lambda e: set_spec(ex0_el.textContent)))
-    ex1_el = document.getElementById('js-example-1')
-    ex1_el.addEventListener('click', create_proxy(lambda e: set_spec(ex1_el.textContent)))
-    ex2_el = document.getElementById('js-example-2')
-    ex2_el.addEventListener('click', create_proxy(lambda e: set_spec(ex2_el.textContent)))
-
-    source_el.focus()
 </py-script>
 </body>
 </html>
