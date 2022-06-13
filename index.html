@@ -11,7 +11,8 @@
         - packaging
         - tabulate
         - colorama
-        - ./dist/pipdev-0.1.0-py3-none-any.whl
+        - paths:
+            - pipdev/pipdev.py
     </py-env>
     <style>
         main {
@@ -104,7 +105,7 @@
 <py-script>
     from js import window, document, window
     from pyodide import create_proxy
-    from pipdev import check, generate_versions_table
+    from pipdev import check_version, generate_versions_table
 
     # Elements:
     output_el = document.getElementById('js-output')
@@ -133,7 +134,7 @@
             return
 
         try:
-            is_valid = check(check_el.value, source_el.value)
+            is_valid = check_version(check_el.value, source_el.value)
         except:
             check_el.setAttribute('aria-invalid', '')
         else:
