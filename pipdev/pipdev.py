@@ -204,7 +204,7 @@ def generate_versions_table(specifier_set: str, fmt: str = 'github') -> str:
     '''
 
 
-def check_version(version: str, specifier_set: str):
+def check_version(version: str, specifier_set: str) -> bool:
     specifier_set = SpecifierSet(specifier_set)
     return version in specifier_set
 
