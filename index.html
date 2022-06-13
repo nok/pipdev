@@ -7,18 +7,14 @@
     <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
     <script defer src="https://pyscript.net/alpha/pyscript.js"></script>
     <title>pipdev</title>
-    <py-env>
-        - packaging
-        - tabulate
-        - colorama
-        - paths:
-            - pipdev/pipdev.py
-    </py-env>
     <style>
-        main {
+        main,
+        py-script,
+        py-env {
             display: none;
         }
-        html.is-loaded main {
+        html.is-loaded main,
+        html.is-loaded py-script {
             display: block;
         }
         .source input,
@@ -70,6 +66,13 @@
             border-bottom: 0;
         }
     </style>
+    <py-env>
+        - packaging
+        - tabulate
+        - colorama
+        - paths:
+            - pipdev/pipdev.py
+    </py-env>
 </head>
 <body>
 <main>
