@@ -17,6 +17,20 @@
         html.is-loaded py-script {
             display: block;
         }
+        .header {
+            text-align: right;
+            margin-bottom: 0.5em;
+        }
+        .header a {
+            font-size: smaller;
+            text-decoration: none;
+        }
+        .source {
+            padding: 1em 0;
+        }
+        .source input:not([type="checkbox"]):not([type="radio"]) {
+            margin: 0;
+        }
         .source input,
         .examples a,
         .checkbox input {
@@ -77,6 +91,9 @@
 <body>
 <main>
     <div class="container">
+        <div class="row header">
+            <a href="https://github.com/nok/pipdev" class="secondary" target="github">github.com/nok/pipdev</a>
+        </div>
         <div class="row source">
             <input type="text" id="js-source" placeholder="~=1.2" value="~=1.2" aria-invalid="">
         </div>
