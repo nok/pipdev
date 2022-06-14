@@ -110,7 +110,7 @@
                         <label for="js-check">Individual test:</label>
                     </li>
                     <li>
-                        <input type="text" id="js-check" placeholder="1.2" value="1.2" aria-invalid="">
+                        <input type="text" id="js-check" placeholder="1.2.1" value="1.2.1" aria-invalid="">
                     </li>
                 </ul>
             </nav>
@@ -207,7 +207,7 @@
     set_spec(spec)
 
     vers = get_url_param('vers')
-    vers = vers if vers else '1.2'
+    vers = vers if vers else '1.2.1'
     set_vers(vers)
 
     source_el.focus()
