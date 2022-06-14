@@ -202,13 +202,13 @@
     def set_vers(value):
         check_el.value = value
 
-    spec = get_url_param('spec')
-    spec = spec if spec else '~=1.2'
-    set_spec(spec)
-
     vers = get_url_param('vers')
     vers = vers if vers else '1.2.1'
     set_vers(vers)
+
+    spec = get_url_param('spec')
+    spec = spec if spec else '~=1.2'
+    set_spec(spec)
 
     source_el.focus()
     body_el = document.getElementsByTagName('html')[0]
