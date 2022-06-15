@@ -137,7 +137,7 @@
     ex2_el = document.getElementById('js-example-2')
 
     def get_url_param(name):
-        params = str(window.location.search).strip('?').replace('%3E', '>').replace('%3C', '<')
+        params = str(window.location.search).strip('?').replace('%3E', '>').replace('%3C', '<').replace('%7E', '~')
         if params == '':
             return False
         params = params.split('&')
