@@ -9,6 +9,6 @@ packages = [
 ]
 
 [[fetch]]
-files = ['__init__.py', 'pipdev.py']
+files = ['app.py']
 from = 'pipdev'
 to_folder = 'pipdev'
