@@ -1,6 +1,6 @@
 # pipdev
 
-It's an interactive tool for developers to test defined specifiers for version handling.
+An interactive tool for developers to test defined specifiers for version handling.
 
 The results are based on the amazing package [pypa/packaging](https://github.com/pypa/packaging).
 
