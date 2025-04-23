@@ -1,0 +1,10 @@
+# https://docs.pyscript.net/2024.10.2/user-guide/configuration/
+name = "pipdev"
+description = "It's an interactive tool for developers to test defined specifiers for version handling."
+
+packages = ["packaging>=23.0", "tabulate>=0.8", "colorama>=0.4"]
+
+[[fetch]]
+files = ['__init__.py', 'pipdev.py']
+from = 'pipdev'
+to_folder = 'pipdev'
