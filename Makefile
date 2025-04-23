@@ -2,18 +2,14 @@ SHELL := /bin/bash
 
 export PYTHONPATH=$(shell pwd)
 
-setup:
-	poetry install
+lint:
+	uvx ruff check .
 
-test: tests
+test:
+	uv run pytest --cov --cov-report term --cov-report html -n auto tests
 
-tests::
-	poetry run pytest tests -v \
-		--cov=pipdev \
-		--disable-warnings \
-		--cov-report html \
-		--cov-report term \
-		-p no:doctest
+setup::
+	uv sync --all-groups --all-extras
 
 build:
-	poetry build
+	uvx hatch build
