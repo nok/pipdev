@@ -22,7 +22,6 @@
             margin-bottom: 0.5em;
         }
         .header a {
-            font-size: smaller;
             text-decoration: none;
         }
         .source {
@@ -37,17 +36,21 @@
             text-align: center;
             font-family: monospace, monospace;
         }
-        .examples, .checkbox {
-            font-size: smaller;
-        }
-        .examples a {
+        .header a,
+        .examples,
+        .examples a,
+        .checkbox,
+        .output thead th,
+        .output tbody span {
             font-size: smaller;
         }
         .checkbox input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"])
         {
             font-size: smaller;
             height: auto;
-            padding: var(--nav-link-spacing-vertical) var(--nav-link-spacing-horizontal);
+        }
+        .checkbox label {
+            margin: 0;
         }
         .output {
             padding-top: 2em;
@@ -58,12 +61,10 @@
         }
         .output thead th {
             text-transform: uppercase;
-            font-size: smaller;
         }
         .output tbody span {
             opacity: 0.5;
             font-family: monospace, monospace;
-            font-size: smaller;
         }
         .output tbody td.is-valid {
             background-color: rgba(0, 128, 0, 0.4);
@@ -101,9 +102,15 @@
             <nav>
                 <ul class="examples">
                     <li>Examples:</li>
-                    <li><a href="#" role="button" class="outline secondary" id="js-example-0" tabindex="3">~=1.2</a></li>
-                    <li><a href="#" role="button" class="outline secondary" id="js-example-1" tabindex="4">==1.2.*</a></li>
-                    <li><a href="#" role="button" class="outline secondary" id="js-example-2" tabindex="5">~=1.2b,<=1.3a,!=1.2</a></li>
+                    <li>
+                        <a href="#" role="button" class="outline secondary" id="js-example-0" tabindex="3">~=1.2</a>
+                    </li>
+                    <li>
+                        <a href="#" role="button" class="outline secondary" id="js-example-1" tabindex="4">==1.2.*</a>
+                    </li>
+                    <li>
+                        <a href="#" role="button" class="outline secondary" id="js-example-2" tabindex="5">~=1.2b,<=1.3a,!=1.2</a>
+                    </li>
                 </ul>
                 <ul class="checkbox">
                     <li>
