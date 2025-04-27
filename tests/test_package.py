@@ -1,4 +1,4 @@
-from pipdev import __version__
+from pip_dev import __version__
 
 
 def test_package_version():

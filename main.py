@@ -1,7 +1,7 @@
 from js import document, window
 from pyodide.ffi import create_proxy
 
-from pipdev.app import check_version, generate_versions_table
+from pip_dev.app import check_version, generate_versions_table
 
 # Elements:
 output_el = document.getElementById("js-output")

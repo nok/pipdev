@@ -1,5 +1,4 @@
-# https://docs.pyscript.net/2024.10.2/user-guide/configuration/
-name = "pipdev"
+name = "pip-dev"
 description = "An interactive tool for developers to test defined specifiers for version handling."
 
 packages = [
@@ -10,5 +9,5 @@ packages = [
 
 [[fetch]]
 files = ['app.py']
-from = 'pipdev'
-to_folder = 'pipdev'
+from = 'pip_dev'
+to_folder = 'pip_dev'

@@ -1,6 +1,6 @@
 import pytest
 
-from pipdev.app import check_version, generate_versions_table
+from pip_dev.app import check_version, generate_versions_table
 
 
 def test_check_version():
