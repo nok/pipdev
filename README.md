@@ -15,9 +15,10 @@
 
 <a href="https://nok.github.io/pip-dev?spec=~=1.2b,<=1.3a,!=1.2&vers=1.2.1" target="_demo"><img src="assets/pip-dev-screenshot.png" alt="pip-dev screenshot"></a>
 
-## Development
 
-The results are based on the amazing package [pypa/packaging](https://github.com/pypa/packaging). For more details read the official specification [Version Identification and Dependency Specification (PEP 440)](https://peps.python.org/pep-0440/).
+## Description
+
+**pip-dev** is an interactive tool designed to help Python developers explore and understand version specifiers as defined by [PEP 440](https://peps.python.org/pep-0440/). It enables users to input version constraints — such as `>=1.4.5`, `~=1.4.5`, or `==1.4.*` — and immediately see which versions match those rules, offering a practical way to test and validate dependency specifications. Built on the [pypa/packaging](https://github.com/pypa/packaging) library, it's ideal for developers managing dependencies, writing `requirements.txt` files, or ensuring compatibility across Python projects.
 
 
 ## Examples
