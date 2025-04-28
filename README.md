@@ -4,7 +4,7 @@
 
 <h1 align="center">pip-dev</h1>
 
-<p align="center">An interactive tool for developers to test defined specifiers for version handling.</p>
+<p align="center">An interactive tool for testing Python version specifiers.</p>
 
 <div align="center">
 
@@ -18,7 +18,7 @@
 
 ## Description
 
-**pip-dev** is an interactive tool designed to help Python developers explore and understand version specifiers as defined by [PEP 440](https://peps.python.org/pep-0440/). It enables users to input version constraints — such as `>=1.4.5`, `~=1.4.5`, or `==1.4.*` — and immediately see which versions match those rules, offering a practical way to test and validate dependency specifications. Built on the [pypa/packaging](https://github.com/pypa/packaging) library, it's ideal for developers managing dependencies, writing `requirements.txt` files, or ensuring compatibility across Python projects.
+**​pip-dev** is an interactive tool for testing Python version specifiers as defined by [PEP 440](https://peps.python.org/pep-0440/). It allows developers to input constraints like `>=1.4.5` or `~=1.4.5` and see which versions match, aiding in dependency management. Built on the [pypa/packaging](https://github.com/pypa/packaging) library, it helps ensure compatibility across Python projects.
 
 
 ## Examples

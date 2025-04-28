@@ -1,7 +1,7 @@
 [project]
 name = "pip-dev"
 version = "0.2.0"
-description = "An interactive tool for developers to test defined specifiers for version handling."
+description = "An interactive tool for testing Python version specifiers."
 readme = "README.md"
 authors = [
     { name = "Darius Morawiec", email = "nok@users.noreply.github.com" }
